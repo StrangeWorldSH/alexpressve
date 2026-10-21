@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlExpressVE | Panel de vendedores</title>
-  <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+  <link rel="icon" type="image/jpeg" href="favicon.jpg">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1063,7 +1063,7 @@
       const botones=[$("form-login-secret")?.querySelector("button[type=submit]"),$("btn-escanear-qr")].filter(Boolean);botones.forEach(b=>b.disabled=true);
       setMessage("mensaje-login-movil","Validando clave con el servicio seguro de Firebase…","info");
       try{await persistenciaLista;const redeem=httpsCallable(functions,"redeemSecretKey");const result=await redeem({secretKey:key});if(!result.data?.customToken)throw new Error("Firebase no devolvió una credencial de sesión válida.");await signInWithCustomToken(auth,result.data.customToken);$("login-secret-key").value="";setMessage("mensaje-login-movil","Sesión iniciada correctamente.","success");}
-      catch(err){console.error("No se pudo iniciar con Secret Key",err);const msg=err.code==="functions/not-found"?"La función redeemSecretKey todavía no está desplegada en Firebase.":(err.message||"No se pudo validar la clave.");setMessage("mensaje-login-movil",msg,"error");}
+      catch(err){console.error("No se pudo iniciar con Secret Key",err);let msg=err.code==="functions/not-found"?"La función redeemSecretKey todavía no está desplegada en Firebase.":(err.message||"No se pudo validar la clave.");if(err.code==="functions/internal"||err.code==="functions/unavailable"){msg="No se pudo conectar con redeemSecretKey. Despliega la versión CORS actualizada de Cloud Functions y confirma que esté activa en us-central1. Si el error continúa, revisa la petición OPTIONS en Network y los registros de Functions.";}setMessage("mensaje-login-movil",msg,"error");}
       finally{botones.forEach(b=>b.disabled=false);}
     }
     $("form-login-secret").addEventListener("submit",e=>{e.preventDefault();accederConSecretKey($("login-secret-key").value);});
