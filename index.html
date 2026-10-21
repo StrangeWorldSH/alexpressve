@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlExpressVE | Panel de vendedores</title>
+  <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+  <style>
+    :root{--navy:#172554;--blue:#5b5ce2;--teal:#12b8a6;--gold:#fbbf24;--pink:#fce7f3}
+    body{background:radial-gradient(circle at 8% 8%,#fce7f3 0,transparent 25%),radial-gradient(circle at 95% 10%,#dbeafe 0,transparent 30%),linear-gradient(135deg,#f8fafc,#eef2ff);font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#172554}
+    input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px #93c5fd;border-color:#2563eb}
+    .brand-gradient{background:linear-gradient(120deg,#101a3b 0%,#4338ca 52%,#0f9f8f 100%)}
+    .app-shell{border-radius:30px;box-shadow:0 28px 80px rgba(30,41,90,.14)}
+    .metric{position:relative;overflow:hidden;background:linear-gradient(145deg,#fff,#f8faff);border:1px solid #e6eaf5;border-radius:22px;padding:20px;box-shadow:0 10px 30px rgba(32,46,90,.055)}
+    .metric:after{content:"";position:absolute;width:88px;height:88px;border-radius:50%;right:-30px;top:-30px;background:linear-gradient(135deg,#c7d2fe88,#99f6e488)}
+    .metric .metric-value{position:relative;z-index:1;font-size:2rem;font-weight:850;color:#15234a;letter-spacing:-.055em}
+    .panel-card{background:#fff;border:1px solid #e7eaf3;border-radius:24px;box-shadow:0 10px 30px rgba(32,46,90,.045)}
+    .field-control{width:100%;border:1px solid #dce2ef;border-radius:13px;padding:12px 14px;background:#fff;transition:border-color .18s,box-shadow .18s}
+    .field-control:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 4px #6366f122}
+    .kebab-menu{min-width:250px;padding:9px;border-radius:20px;box-shadow:0 22px 60px #1725542b}
+    .kebab-menu button{display:block;width:100%;text-align:left;padding:13px;border-radius:13px;font-weight:750;transition:background .15s,transform .15s}
+    .kebab-menu button:hover{transform:translateX(2px)}
+    .chart-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:end;gap:12px;height:170px;padding:12px 4px 0}
+    .chart-col{height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:8px;min-width:0}
+    .chart-bar{width:min(30px,72%);min-height:5px;border-radius:9px 9px 4px 4px;background:linear-gradient(180deg,#818cf8,#4f46e5);box-shadow:0 6px 14px #4f46e522;transition:height .35s}
+    .chart-day{font-size:11px;color:#94a3b8;font-weight:700}
+    .soft-banner{background:linear-gradient(110deg,#eef2ff,#ecfeff);border:1px solid #dbeafe;border-radius:22px}
+    .settings-layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px}
+    .settings-nav{display:flex;flex-direction:column;gap:6px}
+    .settings-nav button{padding:12px 14px;border-radius:13px;text-align:left;font-weight:800;color:#475569}
+    .settings-nav button.active,.settings-nav button:hover{background:#eef2ff;color:#4338ca}
+    .settings-card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:20px}
+    .settings-card h4{font-weight:900;color:#0f172a;font-size:1.05rem}
+    .settings-muted{font-size:.82rem;color:#64748b;line-height:1.5}
+    .device-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e2e8f0;border-radius:13px;padding:12px}
+    .danger-zone{border-color:#fecaca;background:#fffafa}
+    @media(max-width:720px){.settings-layout{grid-template-columns:1fr}.settings-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.settings-nav button{text-align:center;font-size:.78rem;padding:10px 5px}.settings-card{padding:15px}}
+    @media(max-width:640px){.app-shell{border-radius:22px}.chart-bars{gap:6px}.metric .metric-value{font-size:1.65rem}}
+    .metric{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;box-shadow:0 8px 24px #0f172a0a}
+    .metric .metric-value{font-size:1.8rem;font-weight:800;color:#12243a;letter-spacing:-.04em}
+    .nav-pill{border-radius:14px;padding:10px 14px;font-weight:800;font-size:.9rem}.metric{transition:transform .2s,box-shadow .2s}.metric:hover{transform:translateY(-3px);box-shadow:0 14px 32px #312e8118}.app-shell{border-radius:30px}.mascot{font-size:2rem;line-height:1}.kebab-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:40;min-width:220px;background:#fff;border:1px solid #e0e7ff;border-radius:18px;padding:8px;box-shadow:0 20px 45px #17255422}.kebab-menu button{width:100%;text-align:left;padding:12px;border-radius:12px;font-weight:750;color:#334155}.kebab-menu button:hover,.kebab-menu button.active{background:#eef2ff;color:#4338ca}.section-heading{display:flex;align-items:center;gap:12px}.section-emoji{width:44px;height:44px;display:grid;place-items:center;border-radius:15px;background:#eef2ff;font-size:1.45rem}
+  </style>
+</head>
+<body class="min-h-screen px-4 py-6 md:px-8 md:py-8">
+  <main class="app-shell max-w-7xl mx-auto bg-white/95 shadow-2xl shadow-indigo-900/10 overflow-hidden border border-white">
+    <header class="brand-gradient text-white px-6 py-7 md:px-10 md:py-8 flex items-center gap-4">
+      <img src="favicon.jpg" alt="Logo AlExpressVE" class="w-14 h-14 rounded-2xl object-cover bg-white/10 border border-white/20" onerror="this.style.display='none'">
+      <div class="flex-1"><p class="text-xs uppercase tracking-[.25em] text-blue-100 font-bold">Marketplace para comercios</p><h1 class="text-3xl md:text-4xl font-black tracking-tight">AlExpress<span class="text-amber-300">VE</span></h1><p class="text-sm text-blue-100 mt-1">Gestiona tu tienda con una experiencia sencilla, clara y profesional. ✨</p></div>
+    </header>
+    <div id="tabs-acceso" class="flex bg-slate-50 border-b border-slate-200 px-4 md:px-8">
+      <button id="btn-tab-reg" type="button" class="flex-1 py-4 text-center font-bold text-slate-500 hover:text-blue-700">Crear tienda</button>
+      <button id="btn-tab-log" type="button" class="flex-1 py-4 text-center font-bold text-blue-700 border-b-2 border-blue-600 bg-white">Iniciar sesión</button>
+    </div>
+
+    <div class="p-5 md:p-9">
+      <section id="seccion-registro" class="hidden">
+        <div class="text-center mb-6">
+          <h1 class="text-2xl font-bold text-slate-800">Crea tu cuenta de Vendedor</h1>
+          <p class="text-sm text-slate-500">Verifica tu correo electrónico para activar tu tienda.</p>
+        </div>
+
+        <button id="btn-google-registro" type="button" class="w-full mb-5 flex items-center justify-center gap-3 border border-slate-300 bg-white text-slate-700 font-semibold py-3 rounded-lg hover:bg-slate-50 transition">
+          <span class="text-lg font-bold text-blue-600">G</span> Registrarme con Google
+        </button>
+        <p class="text-xs text-center text-slate-500 mb-4">Con Google no necesitas código de verificación por correo. Después completarás los datos de tu comercio.</p>
+        <form id="formRegistro" class="space-y-4">
+          <div>
+            <label for="nombre" class="block text-sm font-medium text-slate-700">Nombre del Comercio</label>
+            <input type="text" id="nombre" name="user_name" required maxlength="100" autocomplete="organization" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="Ej. Mi Bodega">
+          </div>
+          <div>
+            <label for="correo" class="block text-sm font-medium text-slate-700">Correo Electrónico</label>
+            <input type="email" id="correo" name="user_email" required autocomplete="email" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="correo@ejemplo.com">
+          </div>
+          <div>
+            <label for="contrasena" class="block text-sm font-medium text-slate-700">Contraseña</label>
+            <input type="password" id="contrasena" required minlength="8" autocomplete="new-password" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="Mínimo 8 caracteres">
+            <p class="mt-1 text-xs text-slate-500">Usa al menos 8 caracteres. No reutilices una contraseña importante.</p>
+          </div>
+          <div>
+            <label for="confirmar-contrasena" class="block text-sm font-medium text-slate-700">Confirmar contraseña</label>
+            <input type="password" id="confirmar-contrasena" required minlength="8" autocomplete="new-password" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="Repite tu contraseña">
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="tipo_doc" class="block text-sm font-medium text-slate-700">Tipo de Documento</label>
+              <select id="tipo_doc" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg bg-white font-medium text-blue-700">
+                <option value="RIF">RIF (Empresa / Supermercado)</option>
+                <option value="CEDULA">Cédula (Bodega / Negocio)</option>
+              </select>
+            </div>
+            <div>
+              <label id="label_doc" for="num_doc" class="block text-sm font-medium text-slate-700">RIF Fiscal de la Empresa</label>
+              <input type="text" id="num_doc" required class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg uppercase font-mono" placeholder="J-12345678-9">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="slug" class="block text-sm font-medium text-slate-700">Slug (URL de tienda)</label>
+              <input type="text" id="slug" required pattern="[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*" maxlength="60" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="mi-comercio">
+            </div>
+            <div>
+              <label for="whatsapp" class="block text-sm font-medium text-slate-700">WhatsApp de Pedidos</label>
+              <input type="tel" id="whatsapp" required autocomplete="tel" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="04121234567">
+            </div>
+          </div>
+
+          <div>
+            <label for="tipo" class="block text-sm font-medium text-slate-700">Clasificación en el Sistema</label>
+            <select id="tipo" disabled class="mt-1 w-full px-4 py-2 border border-slate-200 bg-slate-50 text-slate-600 rounded-lg">
+              <option value="SUPERMERCADO_GRANDE">Supermercado Grande (Fotos propias y alta calidad)</option>
+              <option value="PEQUENO_NEGOCIO">Pequeño Negocio / Bodega (Imágenes estándar del sistema)</option>
+            </select>
+          </div>
+          <div>
+            <label for="descripcion" class="block text-sm font-medium text-slate-700">Descripción Breve</label>
+            <textarea id="descripcion" name="message" rows="2" maxlength="500" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="¿Qué productos ofreces?"></textarea>
+          </div>
+          <div class="flex items-start space-x-3 pt-2">
+            <input type="checkbox" id="terminos" required class="mt-1 h-4 w-4 text-blue-600 border-slate-300 rounded">
+            <label for="terminos" class="text-xs text-slate-600">Acepto los <span class="text-blue-600 font-semibold">Términos y Condiciones</span> del Marketplace omnicanal.</label>
+          </div>
+          <button id="btn-enviar-otp" type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition shadow-md">Continuar y Enviar Código al Correo</button>
+        </form>
+
+        <section id="modal-otp" class="hidden text-center py-6 space-y-4">
+          <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+            <h3 class="font-bold text-blue-800 text-lg">Código de Verificación Enviado</h3>
+            <p class="text-xs text-blue-600 mt-1">Introduce el código de 6 dígitos que enviamos a tu correo.</p>
+          </div>
+          <label for="input-otp" class="block text-sm font-medium text-slate-700">Código de verificación</label>
+          <input type="text" id="input-otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" class="w-48 text-center text-3xl font-mono tracking-widest py-2 border-2 border-blue-500 rounded-xl mx-auto block" placeholder="123456">
+          <button id="btn-verificar-otp" type="button" class="w-full bg-emerald-600 text-white font-semibold py-3 rounded-lg hover:bg-emerald-700 transition shadow-md">Verificar Código y Finalizar Registro</button>
+          <button id="btn-volver-registro" type="button" class="text-sm text-blue-700 underline">Volver al formulario</button>
+          <div id="mensaje-otp" role="status" aria-live="polite" class="text-sm"></div>
+        </section>
+        <section id="form-google-comercio" class="hidden space-y-4 rounded-xl border border-blue-200 bg-blue-50 p-5">
+          <div>
+            <h2 class="text-xl font-bold text-slate-800">Completa tu comercio</h2>
+            <p class="mt-1 text-sm text-slate-600">Tu cuenta de Google ya está autenticada. Completa estos datos para crear la tienda; no te enviaremos un código OTP.</p>
+          </div>
+          <div>
+            <label for="google-nombre-comercio" class="block text-sm font-medium text-slate-700">Nombre del negocio</label>
+            <input id="google-nombre-comercio" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2" placeholder="Ej. Mi Bodega">
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="google-rif" class="block text-sm font-medium text-slate-700">RIF o cédula</label>
+              <input id="google-rif" required class="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 uppercase" placeholder="J-12345678-9 o V-12345678">
+            </div>
+            <div>
+              <label for="google-telefono" class="block text-sm font-medium text-slate-700">Número de teléfono</label>
+              <input id="google-telefono" type="tel" required autocomplete="tel" class="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2" placeholder="04121234567">
+            </div>
+          </div>
+          <div>
+            <label for="google-password" class="block text-sm font-medium text-slate-700">Contraseña para acceder también con correo</label>
+            <input id="google-password" type="password" required minlength="8" autocomplete="new-password" class="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2" placeholder="Mínimo 8 caracteres">
+            <p class="mt-1 text-xs text-slate-500">Se guardará de forma segura en Firebase Authentication, nunca como texto en Firestore.</p>
+          </div>
+          <div>
+            <label for="google-foto-negocio" class="block text-sm font-medium text-slate-700">Imagen del negocio (opcional)</label>
+            <input id="google-foto-negocio" type="file" accept="image/*" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+            <p class="mt-1 text-xs text-slate-500">Puedes omitirla o añadirla más tarde. Se subirá a Cloudinary. Si la subida falla, el comercio se guardará igualmente.</p>
+            <img id="preview-foto-negocio" alt="Vista previa de la imagen del negocio" class="hidden mt-3 max-h-48 max-w-full rounded-xl border border-slate-200 object-contain" />
+          </div>
+          <div>
+            <label for="google-biografia" class="block text-sm font-medium text-slate-700">Biografía o descripción (opcional)</label>
+            <textarea id="google-biografia" rows="2" maxlength="500" class="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2" placeholder="Cuéntales a tus clientes qué vendes"></textarea>
+          </div>
+          <button id="btn-guardar-google-comercio" type="button" class="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white shadow-md hover:bg-blue-700">Crear mi comercio</button>
+          <button id="btn-cancelar-google-comercio" type="button" class="w-full py-2 text-sm text-slate-600 underline">Cancelar</button>
+          <div id="mensaje-google-registro" role="status" aria-live="polite" class="text-center text-sm"></div>
+        </section>
+        <div id="mensaje-reg" role="status" aria-live="polite" class="mt-4 text-center text-sm"></div>
+      </section>
+
+      <section id="seccion-login">
+        <div class="text-center mb-6">
+          <h1 class="text-2xl font-bold text-slate-800">Iniciar Sesión</h1>
+          <p class="text-sm text-slate-500">Accede al panel de gestión de tu comercio.</p>
+        </div>
+        <section id="acceso-movil" class="hidden max-w-xl mx-auto panel-card p-5 md:p-6">
+          <div class="text-center"><div class="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-indigo-50 text-3xl">🔐</div><h2 class="text-xl font-black text-slate-900">Vincula tu teléfono</h2><p class="settings-muted mt-1">En teléfonos, entra con tu Secret Key o escanea el QR generado desde otro dispositivo conectado.</p></div>
+          <form id="form-login-secret" class="mt-5 space-y-3"><label for="login-secret-key" class="block text-sm font-bold text-slate-700">Secret Key</label><input id="login-secret-key" class="field-control font-mono" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="AEV-XXXX-XXXX-XXXX-XXXX-XXXX" required><button type="submit" class="w-full rounded-xl bg-indigo-600 py-3 font-extrabold text-white hover:bg-indigo-700">Iniciar sesión de forma segura</button></form>
+          <div class="my-4 flex items-center gap-3"><div class="h-px flex-1 bg-slate-200"></div><span class="text-xs font-bold uppercase tracking-wider text-slate-400">o</span><div class="h-px flex-1 bg-slate-200"></div></div>
+          <button id="btn-escanear-qr" type="button" class="w-full rounded-xl border border-slate-300 bg-white py-3 font-bold text-slate-700 hover:bg-slate-50">▦ Escanear código QR</button><div id="lector-qr-login" class="mt-3 hidden overflow-hidden rounded-xl"></div><div id="mensaje-login-movil" role="status" aria-live="polite" class="mt-3 text-sm"></div>
+          <p class="settings-muted mt-4">La Secret Key solo funciona cuando la función segura de inicio por clave está desplegada en Firebase. No se enviará la clave a un servicio externo.</p>
+        </section>
+        <div id="acceso-normal">
+        <button id="btn-google" type="button" class="w-full mb-4 flex items-center justify-center gap-3 border border-slate-300 bg-white text-slate-700 font-semibold py-3 rounded-lg hover:bg-slate-50 transition">
+          <svg aria-hidden="true" viewBox="0 0 48 48" class="w-5 h-5"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 3.03 13.22l7.98 6.19C12.9 13.72 18.03 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.42 37.96 46.98 31.84 46.98 24.55z"/><path fill="#FBBC05" d="M10.99 28.59A14.4 14.4 0 0 1 10.22 24c0-1.59.27-3.13.76-4.59L3 13.22A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l8.43-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-5.97 0-11.1-4.22-12.99-9.91L3.03 34.78C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continuar con Google
+        </button>
+        <p class="text-center text-xs text-slate-500 mb-4">También puedes acceder con tu correo y contraseña.</p>
+        <form id="formLogin" class="space-y-4">
+          <div>
+            <label for="login-email" class="block text-sm font-medium text-slate-700">Correo Electrónico</label>
+            <input type="email" id="login-email" required autocomplete="email" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="correo@ejemplo.com">
+          </div>
+          <div>
+            <label for="login-password" class="block text-sm font-medium text-slate-700">Contraseña</label>
+            <input type="password" id="login-password" required autocomplete="current-password" class="mt-1 w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="Tu contraseña">
+          </div>
+          <button id="btn-login" type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition shadow-md">Acceder a mi Panel</button>
+        </form>
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-sm"><button id="btn-olvido-password" type="button" class="text-blue-700 hover:underline font-semibold">¿Olvidaste tu contraseña?</button><button id="btn-ir-registro" type="button" class="text-slate-600 hover:text-blue-700">¿No tienes cuenta? <b>Regístrate</b></button></div>
+        <div id="mensaje-login" role="status" aria-live="polite" class="mt-4 text-center text-sm"></div>
+        </div>
+      </section>
+
+      <section id="panel-vendedor" class="hidden space-y-7 py-2">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="flex items-center gap-3"><div class="section-emoji">🧑‍💼</div><div><p class="text-xs font-bold uppercase tracking-[.2em] text-indigo-600">TU ESPACIO DE NEGOCIO</p><h2 id="saludo-vendedor" class="text-3xl font-black text-slate-900 mt-1">Panel de tu tienda</h2><p id="subtitulo-vendedor" class="text-slate-500 mt-1">Resumen de tu negocio en tiempo real.</p></div></div><div class="flex items-center gap-2"><button id="btn-refrescar-panel" class="nav-pill bg-indigo-50 text-indigo-800 hover:bg-indigo-100">↻ Actualizar</button><div class="relative"><button id="btn-kebab" aria-label="Abrir menú" aria-expanded="false" class="nav-pill bg-white border border-slate-200 text-slate-700 text-xl">⋮</button><div id="menu-kebab" class="kebab-menu hidden"><button data-vista="inicio" class="active">🏠 &nbsp; Inicio</button><button data-vista="productos">🛍️ &nbsp; Productos</button><button data-vista="pedidos">📦 &nbsp; Pedidos y clientes</button><button data-vista="tienda">🏪 &nbsp; Mi tienda y delivery</button><button data-vista="configuracion">⚙️ &nbsp; Configuración</button><div class="my-1 border-t border-slate-100"></div><button id="btn-cerrar-sesion" class="text-rose-600">🚪 &nbsp; Cerrar sesión</button></div></div></div></div>
+        <div data-vista-panel="inicio" class="soft-banner p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4"><div class="flex items-center gap-4"><div class="text-4xl md:text-5xl" aria-hidden="true">🛍️</div><div><p class="text-xs uppercase tracking-[.18em] font-extrabold text-indigo-600">Tu negocio, en un solo lugar</p><h3 class="text-xl md:text-2xl font-black text-slate-900 mt-1">¡Vamos a vender más!</h3><p class="text-sm text-slate-600 mt-1">Controla tu catálogo, revisa pedidos y organiza tus entregas.</p></div></div><div class="text-4xl" aria-hidden="true">📦✨</div></div>
+        <div data-vista-panel="inicio" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"><article class="metric"><p class="text-sm text-slate-500 font-semibold">Productos publicados</p><p id="metric-productos" class="metric-value">—</p><p class="text-xs text-slate-400 mt-1">En tu catálogo</p></article><article class="metric"><p class="text-sm text-slate-500 font-semibold">Pedidos recibidos</p><p id="metric-pedidos" class="metric-value">—</p><p class="text-xs text-slate-400 mt-1">Registrados para tu tienda</p></article><article class="metric"><p class="text-sm text-slate-500 font-semibold">Clientes</p><p id="metric-clientes" class="metric-value">—</p><p class="text-xs text-slate-400 mt-1">Clientes únicos con pedidos</p></article><article class="metric"><p class="text-sm text-slate-500 font-semibold">Ventas registradas</p><p id="metric-ventas" class="metric-value text-teal-700">—</p><p id="metric-tasa" class="text-xs text-slate-400 mt-1">Consultando tasa de cambio…</p></article></div>
+        <section data-vista-panel="inicio" class="panel-card p-5 md:p-6"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-[.16em] font-extrabold text-indigo-600">Actividad reciente</p><h3 class="text-lg font-black text-slate-900 mt-1">Resumen de ventas</h3><p class="text-sm text-slate-500 mt-1">Vista ilustrativa de los últimos 7 días; se actualizará con los pedidos que tenga tu tienda.</p></div><span class="rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-bold">Últimos 7 días</span></div><div id="grafica-ventas" class="chart-bars" role="img" aria-label="Gráfica de actividad de ventas de los últimos siete días"><div class="chart-col"><div class="chart-bar" style="height:18%"></div><span class="chart-day">Lun</span></div><div class="chart-col"><div class="chart-bar" style="height:35%"></div><span class="chart-day">Mar</span></div><div class="chart-col"><div class="chart-bar" style="height:26%"></div><span class="chart-day">Mié</span></div><div class="chart-col"><div class="chart-bar" style="height:62%"></div><span class="chart-day">Jue</span></div><div class="chart-col"><div class="chart-bar" style="height:43%"></div><span class="chart-day">Vie</span></div><div class="chart-col"><div class="chart-bar" style="height:82%"></div><span class="chart-day">Sáb</span></div><div class="chart-col"><div class="chart-bar" style="height:52%"></div><span class="chart-day">Dom</span></div></div><p class="text-xs text-slate-400 mt-3">La gráfica inicial es demostrativa y no representa ventas reales todavía.</p></section>
+        <div data-vista-panel="productos tienda" class="grid grid-cols-1 xl:grid-cols-3 gap-6"><section data-vista-panel="productos" class="xl:col-span-2 rounded-2xl panel-card p-5 md:p-6"><div class="flex items-center justify-between gap-3 mb-4"><div><h3 class="font-extrabold text-lg text-slate-900">Nuevo producto</h3><p class="text-sm text-slate-500">Define precio y moneda; el equivalente se calcula con la tasa consultada.</p></div><span class="rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-bold">Catálogo</span></div>
+        <form id="formProducto" class="space-y-4"><div><label for="producto-nombre" class="block text-sm font-medium text-slate-700">Nombre del producto</label><input id="producto-nombre" required maxlength="120" class="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2" placeholder="Ej. Harina de maíz 1 kg"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label for="producto-categoria" class="block text-sm font-medium text-slate-700">Categoría</label><select id="producto-categoria" required class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2"><option value="">Selecciona</option><option>Alimentos</option><option>Bebidas</option><option>Hogar</option><option>Higiene y cuidado personal</option><option>Electrónica</option><option>Ropa y accesorios</option><option>Otros</option></select></div><div><label for="producto-subcategoria" class="block text-sm font-medium text-slate-700">Subcategoría</label><input id="producto-subcategoria" required maxlength="80" class="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2" placeholder="Ej. Harinas"></div></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-4"><div><label for="producto-precio" class="block text-sm font-medium text-slate-700">Precio</label><input id="producto-precio" type="number" min="0.01" step="0.01" required class="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2" placeholder="0.00"></div><div><label for="producto-moneda" class="block text-sm font-medium text-slate-700">Moneda</label><select id="producto-moneda" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2"><option value="USD">Dólares (USD)</option><option value="VES">Bolívares (VES)</option></select></div><div><label class="block text-sm font-medium text-slate-700">Equivalente aproximado</label><div id="producto-equivalente" class="mt-1 rounded-lg bg-blue-50 border border-blue-100 px-4 py-2 font-bold text-blue-800">—</div></div></div><div><label for="producto-foto" class="block text-sm font-medium text-slate-700">Foto del producto (opcional)</label><input id="producto-foto" type="file" accept="image/*" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2"><img id="preview-foto-producto" alt="Vista previa del producto" class="hidden mt-3 max-h-48 max-w-full rounded-xl border border-slate-200 object-contain"></div><button id="btn-publicar-producto" type="submit" class="w-full rounded-lg bg-emerald-600 py-3 font-bold text-white hover:bg-emerald-700">Guardar producto</button><div id="mensaje-producto" role="status" aria-live="polite" class="text-sm"></div></form></section>
+        <aside data-vista-panel="tienda" class="rounded-2xl bg-slate-900 text-white p-5 md:p-6"><h3 class="text-lg font-extrabold">Delivery y dirección de la tienda</h3><p class="text-sm text-slate-300 mt-1">La dirección comercial puede mostrarse públicamente; las direcciones de clientes deben mantenerse privadas.</p><div id="resumen-tienda" class="mt-4 text-sm text-slate-200">Cargando datos de tu tienda…</div><p class="text-xs text-slate-400 mt-4">La dirección particular del cliente solo debe mostrarse en pedidos autorizados para este vendedor.</p></aside></div>
+        <section data-vista-panel="pedidos" class="rounded-2xl panel-card p-5 md:p-6"><div class="flex items-center justify-between mb-4"><div><h3 class="text-lg font-extrabold text-slate-900">📦 Pedidos y entregas</h3><p class="text-sm text-slate-500">Los pedidos aparecerán cuando la app de clientes los cree en Firestore.</p></div></div><div id="lista-pedidos" class="space-y-3"><p class="text-sm text-slate-500">Cargando pedidos…</p></div></section>
+        <section data-vista-panel="productos" class="rounded-2xl panel-card p-5 md:p-6"><div class="flex items-center justify-between mb-4"><div><h3 class="text-lg font-extrabold text-slate-900">🛍️ Tus productos</h3><p class="text-sm text-slate-500">Catálogo y precios publicados.</p></div></div><div id="lista-productos" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"></div></section><div id="mensaje-panel" role="status" aria-live="polite" class="text-sm"></div>
+        <section id="seccion-configuracion" class="hidden space-y-5" aria-labelledby="titulo-configuracion">
+          <div><p class="text-xs font-extrabold uppercase tracking-[.2em] text-indigo-600">Preferencias de la cuenta</p><h3 id="titulo-configuracion" class="text-2xl font-black text-slate-900 mt-1">Configuración</h3><p class="text-sm text-slate-500 mt-1">Administra tu perfil, el acceso a tu cuenta y tus dispositivos.</p></div>
+          <div class="settings-layout">
+            <nav class="settings-card settings-nav" aria-label="Categorías de configuración"><button type="button" class="active" data-config-tab="general">👤 General</button><button type="button" data-config-tab="compartir">🔐 Compartir inicio</button><button type="button" data-config-tab="cuenta">🛡️ Cuenta</button></nav>
+            <div class="space-y-4 min-w-0">
+              <section data-config-panel="general" class="space-y-4">
+                <div class="settings-card"><h4>Perfil del comercio</h4><p class="settings-muted mt-1 mb-4">Estos datos se guardan en tu perfil de vendedor.</p>
+                  <form id="form-perfil-config" class="space-y-4">
+                    <div class="flex items-center gap-4"><img id="config-foto-preview" alt="Foto de perfil" class="h-16 w-16 rounded-2xl object-cover bg-slate-100 border border-slate-200" src="https://placehold.co/96x96/e0e7ff/4338ca?text=AE"><div class="min-w-0 flex-1"><label for="config-foto" class="block text-sm font-bold text-slate-700">Foto de perfil</label><input id="config-foto" type="file" accept="image/*" class="mt-1 w-full text-sm"><p class="settings-muted">PNG, JPG o WEBP. Máximo 5 MB.</p></div></div>
+                    <div><label for="config-telefono" class="block text-sm font-bold text-slate-700">Número de contacto</label><input id="config-telefono" class="field-control mt-1" type="tel" maxlength="30" placeholder="+58 412 1234567"></div>
+                    <div><label for="config-biografia" class="block text-sm font-bold text-slate-700">Biografía</label><textarea id="config-biografia" class="field-control mt-1" rows="3" maxlength="500" placeholder="Cuéntales a tus clientes qué ofrece tu negocio."></textarea><p class="settings-muted mt-1">Máximo 500 caracteres.</p></div>
+                    <div><label for="config-web" class="block text-sm font-bold text-slate-700">Página web</label><input id="config-web" class="field-control mt-1" type="url" maxlength="300" placeholder="https://tusitio.com"></div>
+                    <button class="w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700" type="submit">Guardar perfil</button><div id="mensaje-perfil-config" role="status" aria-live="polite" class="text-sm"></div>
+                  </form>
+                </div>
+                <div class="settings-card"><h4>Cambiar correo electrónico</h4><p class="settings-muted mt-1 mb-4">Por seguridad, Firebase puede pedir una reautenticación. Se enviará verificación al nuevo correo.</p><form id="form-email-config" class="space-y-3"><div><label for="config-email-nuevo" class="block text-sm font-bold text-slate-700">Nuevo correo</label><input id="config-email-nuevo" type="email" autocomplete="email" required class="field-control mt-1" placeholder="nuevo@correo.com"></div><div><label for="config-email-password" class="block text-sm font-bold text-slate-700">Contraseña actual</label><input id="config-email-password" type="password" autocomplete="current-password" required class="field-control mt-1"></div><button class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-bold text-indigo-700 hover:bg-indigo-100" type="submit">Actualizar correo</button><div id="mensaje-email-config" role="status" aria-live="polite" class="text-sm"></div></form></div>
+                <div class="settings-card"><h4>Cambiar contraseña</h4><p class="settings-muted mt-1 mb-4">Usa una contraseña única de al menos 8 caracteres.</p><form id="form-password-config" class="space-y-3"><div><label for="config-password-actual" class="block text-sm font-bold text-slate-700">Contraseña actual</label><input id="config-password-actual" type="password" autocomplete="current-password" required class="field-control mt-1"></div><div><label for="config-password-nueva" class="block text-sm font-bold text-slate-700">Nueva contraseña</label><input id="config-password-nueva" type="password" autocomplete="new-password" minlength="8" required class="field-control mt-1"></div><div><label for="config-password-confirmar" class="block text-sm font-bold text-slate-700">Confirmar nueva contraseña</label><input id="config-password-confirmar" type="password" autocomplete="new-password" minlength="8" required class="field-control mt-1"></div><button class="rounded-xl bg-slate-900 px-4 py-3 font-bold text-white hover:bg-slate-700" type="submit">Cambiar contraseña</button><div id="mensaje-password-config" role="status" aria-live="polite" class="text-sm"></div></form></div>
+              </section>
+              <section data-config-panel="compartir" class="hidden space-y-4">
+                <div class="settings-card"><h4>Secret Key de AlExpressVE</h4><p class="settings-muted mt-1">Es una clave privada para vincular otros dispositivos. Pulsa Mostrar e introduce tu contraseña actual. No compartas capturas ni envíes esta clave por chats públicos.</p><div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><b>Importante:</b> la clave se guarda cifrada en Firestore. Para usarla como inicio de sesión en otro teléfono hace falta desplegar una Cloud Function que valide la clave y emita un token de Firebase; el HTML por sí solo no puede crear ese token de forma segura.</div><form id="form-mostrar-secret" class="mt-4 space-y-3"><label for="secret-password" class="block text-sm font-bold text-slate-700">Confirma tu contraseña</label><input id="secret-password" type="password" required autocomplete="current-password" class="field-control" placeholder="Contraseña actual"><button type="submit" class="w-full rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white hover:bg-indigo-700">Verificar y mostrar Secret Key</button><div id="mensaje-secret" role="status" aria-live="polite" class="text-sm"></div></form><div id="secret-reveal" class="hidden mt-4 space-y-3"><div class="rounded-xl bg-slate-900 p-4 text-center text-white"><p class="text-xs uppercase tracking-widest text-slate-300">Tu Secret Key</p><p id="secret-key-visible" class="mt-2 break-all font-mono text-lg font-black tracking-wide select-all"></p><button type="button" id="btn-copiar-secret" class="mt-3 rounded-lg bg-white/10 px-3 py-2 text-sm font-bold hover:bg-white/20">Copiar clave</button></div><div class="rounded-xl border border-slate-200 p-4"><h5 class="font-extrabold text-slate-800">Vincular con QR</h5><p class="settings-muted mt-1">El QR contiene esta clave privada. Muéstralo únicamente al dispositivo que deseas vincular.</p><div id="qrcode-secret" class="mt-4 flex justify-center min-h-4"></div><p class="settings-muted mt-3">El escaneo y canje automático requieren la función segura de vinculación en Firebase.</p></div></div></div>
+              </section>
+              <section data-config-panel="cuenta" class="hidden space-y-4">
+                <div class="settings-card"><h4>Dispositivos con sesión registrada</h4><p class="settings-muted mt-1 mb-4">Se muestran los navegadores que han usado esta cuenta y se han registrado en Firestore. Esto no equivale a una lista de sesiones de Firebase revocables.</p><div id="lista-dispositivos" class="space-y-2"><p class="settings-muted">Cargando dispositivos…</p></div><div id="mensaje-dispositivos" class="settings-muted mt-3"></div></div>
+                <div class="settings-card"><div class="flex flex-wrap items-center justify-between gap-3"><div><h4>Suspender cuenta</h4><p class="settings-muted mt-1">Una cuenta suspendida debe quedar oculta en la app de clientes mediante el campo <code>cuenta_suspendida</code>.</p></div><span id="estado-cuenta-badge" class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-700">Activa</span></div><button type="button" id="btn-suspender-cuenta" class="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 font-bold text-amber-800 hover:bg-amber-100">Suspender cuenta</button><div id="mensaje-suspension" role="status" aria-live="polite" class="text-sm mt-2"></div></div>
+                <div class="settings-card danger-zone"><h4 class="text-rose-700">Eliminar cuenta</h4><p class="settings-muted mt-1">Esta acción es irreversible. La eliminación completa también debe borrar o anonimizar productos, pedidos y datos asociados desde una función administrativa segura. Por ahora, este panel registra una solicitud de eliminación para evitar dejar datos huérfanos.</p><form id="form-eliminar-cuenta" class="mt-4 space-y-3"><label for="confirmar-eliminacion" class="block text-sm font-bold text-slate-700">Escribe ELIMINAR para solicitarlo</label><input id="confirmar-eliminacion" class="field-control" required autocomplete="off" placeholder="ELIMINAR"><label for="eliminar-password" class="block text-sm font-bold text-slate-700">Contraseña actual</label><input id="eliminar-password" type="password" class="field-control" required autocomplete="current-password"><button class="rounded-xl bg-rose-600 px-4 py-3 font-bold text-white hover:bg-rose-700" type="submit">Solicitar eliminación de cuenta</button><div id="mensaje-eliminar-cuenta" role="status" aria-live="polite" class="text-sm"></div></form></div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </section>
+
+  </main>
+
+  <script>
+    emailjs.init({ publicKey: "kUMoXPTvNIFpnuekx" });
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, writeBatch, collection, query, where, getDocs, serverTimestamp, updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
+      GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+      EmailAuthProvider, linkWithCredential, browserLocalPersistence, setPersistence,
+      reauthenticateWithCredential, updateEmail, updatePassword, updateProfile, sendEmailVerification,
+      signInWithCustomToken
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHQaVRr2aTnhCY4tRcLsfgbHAGC8XFQ98",
+      authDomain: "marketplaceomnicanal.firebaseapp.com",
+      projectId: "marketplaceomnicanal",
+      storageBucket: "marketplaceomnicanal.firebasestorage.app",
+      messagingSenderId: "584833272263",
+      appId: "1:584833272263:web:1752f8c16148f66893b1e2"
+    };
+
+    const EMAILJS_SERVICE_ID = "service_tgv65w7";
+    const EMAILJS_TEMPLATE_ID = "template_m6xtrpp";
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const functions = getFunctions(app, "us-central1");
+    // Mantiene la sesión iniciada en el dispositivo hasta que el usuario cierre sesión.
+    const persistenciaLista = setPersistence(auth, browserLocalPersistence).catch(err => {
+      console.error("No se pudo activar la persistencia local de Firebase Auth:", err);
+      throw err;
+    });
+    let comercioActual = {};
+    let usuarioGooglePendiente = null;
+    let modoEdicionImagen = false;
+    const CLOUDINARY_CLOUD_NAME = "llrgc17y";
+    const CLOUDINARY_UPLOAD_PRESET = "AlExpressVE";
+    // Esquema Firestore: usuarios/{uid} para compradores; vendedores/{uid} para tiendas;
+    // productos/{id} con vendedor_uid, nombre_tienda, nombre, categoria, subcategoria y foto_url.
+    // Las contraseñas pertenecen exclusivamente a Firebase Authentication, nunca a Firestore.
+
+    let codigoOTPGenerado = "";
+    let datosPendientesRegistro = null;
+    let passwordPendiente = "";
+
+    const $ = (id) => document.getElementById(id);
+    const setMessage = (id, message, type = "info") => {
+      const el = $(id);
+      el.textContent = message;
+      const styles = {
+        info: "mt-4 text-center text-sm font-medium text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200",
+        success: "mt-4 text-center text-sm font-medium text-green-700 bg-green-50 p-3 rounded-lg border border-green-200",
+        error: "mt-4 text-center text-sm font-semibold text-red-600 bg-red-50 p-3 rounded-lg border border-red-200"
+      };
+      el.className = styles[type] || styles.info;
+    };
+
+    const bytesABase64 = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes)));
+    const base64ABytes = (value) => Uint8Array.from(atob(value), c => c.charCodeAt(0));
+    const bytesHex = (bytes) => Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2,"0")).join("");
+    async function derivarClaveCifrado(password, salt) {
+      const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+      return crypto.subtle.deriveKey({ name:"PBKDF2", salt, iterations:210000, hash:"SHA-256" }, material, { name:"AES-GCM", length:256 }, false, ["encrypt","decrypt"]);
+    }
+    async function hashSecretKey(secret) {
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret.trim().toUpperCase()));
+      return bytesHex(digest);
+    }
+    async function crearSecretKeyCifrada(password) {
+      const secretBytes = crypto.getRandomValues(new Uint8Array(24));
+      const hex = bytesHex(secretBytes);
+      const secret = `AEV-${hex.slice(0,8)}-${hex.slice(8,16)}-${hex.slice(16,24)}-${hex.slice(24,32)}-${hex.slice(32,48)}`.toUpperCase();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await derivarClaveCifrado(password, salt);
+      const cipher = await crypto.subtle.encrypt({name:"AES-GCM",iv}, key, new TextEncoder().encode(secret));
+      const secret_key_hash = await hashSecretKey(secret);
+      return { secret, datos:{ secret_key_hash, secret_key_version:1, secret_key_created_at:serverTimestamp() }, privado:{ secret_key_ciphertext:bytesABase64(cipher), secret_key_salt:bytesABase64(salt), secret_key_iv:bytesABase64(iv), secret_key_version:1, updated_at:serverTimestamp() } };
+    }
+    async function descifrarSecretKey(datos, password) {
+      if (!datos.secret_key_ciphertext || !datos.secret_key_salt || !datos.secret_key_iv) return null;
+      const key = await derivarClaveCifrado(password, base64ABytes(datos.secret_key_salt));
+      const plain = await crypto.subtle.decrypt({name:"AES-GCM",iv:base64ABytes(datos.secret_key_iv)}, key, base64ABytes(datos.secret_key_ciphertext));
+      return new TextDecoder().decode(plain);
+    }
+    async function guardarSecretKeyPrivada(user, generado) {
+      await setDoc(doc(db,"vendedores",user.uid,"seguridad","secretKey"), generado.privado, {merge:true});
+    }
+    async function reautenticarConPassword(user, password) {
+      if (!user?.email) throw new Error("Esta cuenta no tiene un correo asociado para reautenticarse.");
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, password));
+    }
+    function idDispositivoLocal() {
+      let id = localStorage.getItem("aev_device_id");
+      if (!id) { id = crypto.randomUUID ? crypto.randomUUID() : bytesHex(crypto.getRandomValues(new Uint8Array(16))); localStorage.setItem("aev_device_id", id); }
+      return id;
+    }
+    function nombreNavegador() {
+      const ua = navigator.userAgent;
+      const navegador = /Edg\//.test(ua) ? "Microsoft Edge" : /OPR\//.test(ua) ? "Opera" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) && !/Chrome\//.test(ua) ? "Safari" : "Navegador web";
+      const equipo = /Android/.test(ua) ? "Android" : /iPhone|iPad/.test(ua) ? "iPhone/iPad" : /Windows/.test(ua) ? "Windows" : /Mac OS/.test(ua) ? "Mac" : /Linux/.test(ua) ? "Linux" : "Dispositivo";
+      return `${navegador} · ${equipo}`;
+    }
+    async function registrarDispositivo(user) {
+      if (!user) return;
+      const id = idDispositivoLocal();
+      try {
+        await setDoc(doc(db,"vendedores",user.uid,"dispositivos",id), { id, nombre:nombreNavegador(), user_agent:navigator.userAgent.slice(0,350), ultimo_acceso:serverTimestamp(), creado_en:serverTimestamp() }, {merge:true});
+        await cargarDispositivos(user.uid);
+      } catch (err) {
+        console.warn("No se pudo registrar este dispositivo; revisa las reglas de Firestore.",err);
+        if ($("mensaje-dispositivos")) $("mensaje-dispositivos").textContent = "No se pudieron registrar dispositivos. Revisa las reglas de acceso a vendedores/{uid}/dispositivos.";
+      }
+    }
+
+    function cambiarTab(tab) {
+      const registro = tab === "reg";
+      $("seccion-registro").classList.toggle("hidden", !registro);
+      $("seccion-login").classList.toggle("hidden", registro);
+      $("btn-tab-reg").className = registro
+        ? "flex-1 py-3 text-center font-bold text-blue-600 border-b-2 border-blue-600 bg-white rounded-t-xl"
+        : "flex-1 py-3 text-center font-medium text-slate-500 hover:text-slate-700";
+      $("btn-tab-log").className = !registro
+        ? "flex-1 py-3 text-center font-bold text-blue-600 border-b-2 border-blue-600 bg-white rounded-t-xl"
+        : "flex-1 py-3 text-center font-medium text-slate-500 hover:text-slate-700";
+    }
+    $("btn-tab-reg").addEventListener("click", () => cambiarTab("reg"));
+    $("btn-tab-log").addEventListener("click", () => cambiarTab("log"));
+
+    $("tipo_doc").addEventListener("change", (e) => {
+      const esRif = e.target.value === "RIF";
+      $("label_doc").textContent = esRif ? "RIF Fiscal de la Empresa" : "Cédula de Identidad (Propietario)";
+      $("num_doc").placeholder = esRif ? "J-12345678-9" : "V-12345678";
+      $("tipo").value = esRif ? "SUPERMERCADO_GRANDE" : "PEQUENO_NEGOCIO";
+    });
+
+    function validarTelefono(valor) {
+      let numero = valor.replace(/\D/g, "");
+      if (numero.startsWith("58")) numero = numero.slice(2);
+      if (numero.startsWith("0")) numero = numero.slice(1);
+      return /^(412|414|424|416|426|251|422)\d{7}$/.test(numero) ? "+58" + numero : null;
+    }
+    function validarRIF(rif) {
+      return /^[JVEGP]-\d{8}-\d$/i.test(rif.trim());
+    }
+    function mensajeAyudaCloudinary(error) {
+      return "La imagen no pudo subirse a Cloudinary. Comprueba el Cloud name, que el Upload preset AlExpressVE exista y esté configurado como Unsigned, y tu conexión. Puedes guardar los datos sin foto e intentarlo más tarde.";
+    }
+
+    async function subirImagenCloudinary(archivo, uid, tipo) {
+      if (!archivo) return "";
+      if (!archivo.type.startsWith("image/")) throw new Error("Selecciona un archivo de imagen válido.");
+      if (archivo.size > 5 * 1024 * 1024) throw new Error("La imagen debe pesar 5 MB o menos.");
+      const formData = new FormData();
+      formData.append("file", archivo);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      formData.append("folder", `alexpressve/${tipo}/${uid}`);
+      const response = await conTiempoLimite(fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData
+      }), "subir imagen a Cloudinary", 45000);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.secure_url) {
+        throw new Error(data?.error?.message || `Cloudinary respondió ${response.status}.`);
+      }
+      return data.secure_url;
+    }
+
+    function configurarVistaPrevia(inputId, previewId) {
+      $(inputId).addEventListener("change", () => {
+        const archivo = $(inputId).files?.[0];
+        const preview = $(previewId);
+        if (!archivo) { preview.classList.add("hidden"); preview.removeAttribute("src"); return; }
+        if (!archivo.type.startsWith("image/")) { setMessage("mensaje-google-registro", "El archivo seleccionado no es una imagen.", "error"); $(inputId).value = ""; return; }
+        if (archivo.size > 5 * 1024 * 1024) { setMessage("mensaje-google-registro", "La imagen debe pesar 5 MB o menos.", "error"); $(inputId).value = ""; return; }
+        preview.src = URL.createObjectURL(archivo);
+        preview.classList.remove("hidden");
+        if (inputId === "google-foto-negocio" || inputId === "producto-foto") {
+          setMessage(inputId === "google-foto-negocio" ? "mensaje-google-registro" : "mensaje-producto", "Imagen seleccionada. Se subirá a Cloudinary cuando guardes.", "success");
+        }
+      });
+    }
+    configurarVistaPrevia("google-foto-negocio", "preview-foto-negocio");
+    configurarVistaPrevia("producto-foto", "preview-foto-producto");
+
+    function mensajeFirebase(error) {
+      const errores = {
+        "auth/email-already-in-use": "Ese correo ya tiene una cuenta.",
+        "auth/invalid-email": "El correo electrónico no es válido.",
+        "auth/weak-password": "La contraseña es demasiado débil. Usa al menos 8 caracteres.",
+        "auth/invalid-credential": "Correo o contraseña incorrectos.",
+        "auth/user-not-found": "Correo o contraseña incorrectos.",
+        "auth/wrong-password": "Correo o contraseña incorrectos.",
+        "auth/too-many-requests": "Demasiados intentos. Inténtalo más tarde.",
+        "auth/network-request-failed": "No se pudo conectar. Revisa tu conexión."
+      };
+      return errores[error.code] || error.message || "Ocurrió un error inesperado.";
+    }
+
+    // Evita que la interfaz quede cargando indefinidamente si Firebase no responde.
+    function conTiempoLimite(promesa, operacion, ms = 25000) {
+      let temporizador;
+      const limite = new Promise((_, reject) => {
+        temporizador = setTimeout(() => reject(new Error(`TIEMPO_AGOTADO:${operacion}`)), ms);
+      });
+      return Promise.race([promesa, limite]).finally(() => clearTimeout(temporizador));
+    }
+
+    function mensajeErrorGoogle(err) {
+      const code = err?.code || "";
+      if (err?.message?.startsWith("TIEMPO_AGOTADO:")) {
+        const operacion = err.message.split(":").slice(1).join(":");
+        return `Firebase tardó demasiado al ${operacion}. Revisa la conexión y las reglas de Firestore/Storage; vuelve a intentarlo. La página ya no quedará cargando indefinidamente.`;
+      }
+      if (code === "permission-denied" || code === "firestore/permission-denied") {
+        return "Firebase Firestore rechazó guardar el comercio (permission-denied). Revisa las reglas de Firestore para permitir que el usuario autenticado escriba en vendedores/{su propio UID} y tenants/{su propio UID}.";
+      }
+      if (code === "storage/unauthorized") {
+        return "Firebase Storage rechazó la imagen. Revisa las reglas de Storage para permitir que el usuario autenticado suba archivos a vendedores/{su UID}/.";
+      }
+      if (code === "auth/email-already-in-use" || code === "auth/credential-already-in-use") {
+        return "Ese correo ya está vinculado a otra cuenta de Firebase. No se duplicó la cuenta: inicia sesión con el método que usaste originalmente o revisa Firebase Authentication.";
+      }
+      if (code === "storage/unknown" || code === "storage/retry-limit-exceeded") {
+        return "No se pudo subir la imagen a Firebase Storage. Comprueba que Storage esté habilitado, que el bucket de Firebase sea correcto y que sus reglas permitan la subida.";
+      }
+      return mensajeFirebase(err);
+    }
+
+    $("formRegistro").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = $("btn-enviar-otp");
+      btn.disabled = true;
+      btn.textContent = "Validando datos...";
+      $("mensaje-reg").textContent = "";
+
+      const email = $("correo").value.trim().toLowerCase();
+      const rifCedula = $("num_doc").value.trim().toUpperCase();
+      const telefono = validarTelefono($("whatsapp").value.trim());
+      const password = $("contrasena").value;
+      const confirmacion = $("confirmar-contrasena").value;
+      const slug = $("slug").value.trim().toLowerCase();
+
+      try {
+        if (password.length < 8) throw new Error("La contraseña debe tener al menos 8 caracteres.");
+        if (password !== confirmacion) throw new Error("Las contraseñas no coinciden.");
+        if (!telefono) throw new Error("Número de WhatsApp inválido. Ejemplo: 04121234567.");
+        if ($("tipo_doc").value === "RIF" && !validarRIF(rifCedula)) {
+          throw new Error("Formato de RIF inválido. Ejemplo: J-12345678-9.");
+        }
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+          throw new Error("El slug solo puede contener letras minúsculas, números y guiones.");
+        }
+
+        const existente = await getDocs(query(collection(db, "tenants"), where("email", "==", email)));
+        if (!existente.empty) throw new Error("Este correo ya está registrado como comercio.");
+
+        const slugExistente = await getDocs(query(collection(db, "tenants"), where("slug", "==", slug)));
+        if (!slugExistente.empty) throw new Error("Ese slug ya está en uso. Elige otro para la URL de tu tienda.");
+
+        codigoOTPGenerado = String(Math.floor(100000 + Math.random() * 900000));
+        datosPendientesRegistro = {
+          nombre_comercio: $("nombre").value.trim(),
+          email,
+          tipo_documento: $("tipo_doc").value,
+          rif_o_cedula: rifCedula,
+          whatsapp_telefono: telefono,
+          slug,
+          tipo_comercio: $("tipo").value,
+          descripcion: $("descripcion").value.trim(),
+          terminos_aceptados: $("terminos").checked,
+          verificado: true,
+          created_at: new Date().toISOString()
+        };
+        passwordPendiente = password;
+
+        btn.textContent = "Enviando código...";
+        // Los nombres de estas variables deben coincidir con los de la plantilla EmailJS.
+        const parametrosPlantilla = {
+          user_name: datosPendientesRegistro.nombre_comercio,
+          user_email: email,
+          codigo_otp: codigoOTPGenerado,
+          message: datosPendientesRegistro.descripcion
+        };
+
+        await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
+          parametrosPlantilla,
+          { publicKey: "kUMoXPTvNIFpnuekx" }
+        );
+
+        $("formRegistro").classList.add("hidden");
+        $("modal-otp").classList.remove("hidden");
+        setMessage("mensaje-reg", "Código enviado. Revisa tu bandeja de entrada y spam.", "success");
+      } catch (err) {
+        console.error("Error EmailJS/registro:", {
+          status: err?.status,
+          text: err?.text,
+          message: err?.message,
+          error: err
+        });
+        const detalle = err?.text || err?.message || mensajeFirebase(err);
+        setMessage("mensaje-reg", `No se pudo enviar el código. ${detalle}`, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Continuar y Enviar Código al Correo";
+      }
+    });
+
+    $("btn-volver-registro").addEventListener("click", () => {
+      $("modal-otp").classList.add("hidden");
+      $("formRegistro").classList.remove("hidden");
+      $("mensaje-otp").textContent = "";
+    });
+
+    $("btn-verificar-otp").addEventListener("click", async () => {
+      const ingreso = $("input-otp").value.trim();
+      const btn = $("btn-verificar-otp");
+      if (!datosPendientesRegistro || !passwordPendiente) {
+        setMessage("mensaje-otp", "La sesión de registro expiró. Vuelve a completar el formulario.", "error");
+        return;
+      }
+      if (!/^\d{6}$/.test(ingreso) || ingreso !== codigoOTPGenerado) {
+        setMessage("mensaje-otp", "Código incorrecto. Revisa los 6 dígitos del correo.", "error");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Creando cuenta...";
+      try {
+        await persistenciaLista;
+        const secretoNuevo = await crearSecretKeyCifrada(passwordPendiente);
+        const credential = await createUserWithEmailAndPassword(auth, datosPendientesRegistro.email, passwordPendiente);
+        const uid = credential.user.uid;
+        const vendedor = {
+          ...datosPendientesRegistro, ...secretoNuevo.datos, uid,
+          nombre_tienda: datosPendientesRegistro.nombre_comercio,
+          rif_cedula: datosPendientesRegistro.rif_o_cedula,
+          telefono: datosPendientesRegistro.whatsapp_telefono,
+          biografia: datosPendientesRegistro.descripcion || "",
+          foto_perfil: "",
+          url_tienda: `${location.origin}${location.pathname}?tienda=${encodeURIComponent(datosPendientesRegistro.slug)}`,
+          rol: "vendedor",
+          updated_at: new Date().toISOString()
+        };
+        await setDoc(doc(db, "vendedores", uid), vendedor);
+        await guardarSecretKeyPrivada(credential.user, secretoNuevo);
+        // Compatibilidad con la versión anterior del panel.
+        await setDoc(doc(db, "tenants", uid), { ...vendedor });
+        setMessage("mensaje-otp", "¡Registro exitoso! Tu cuenta y comercio se crearon correctamente.", "success");
+        datosPendientesRegistro = null;
+        passwordPendiente = "";
+        codigoOTPGenerado = "";
+        $("formRegistro").reset();
+        $("contrasena").value = "";
+        $("confirmar-contrasena").value = "";
+        $("formRegistro").classList.remove("hidden");
+        $("modal-otp").classList.add("hidden");
+        cambiarTab("log");
+        $("login-email").value = credential.user.email || "";
+        $("mensaje-login").textContent = "Cuenta creada. Ya puedes iniciar sesión con tu correo y contraseña.";
+        $("mensaje-login").className = "mt-4 text-center text-sm text-green-700";
+        await signOut(auth);
+      } catch (err) {
+        setMessage("mensaje-otp", mensajeFirebase(err), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Verificar Código y Finalizar Registro";
+      }
+    });
+
+    // Google se ofrece tanto desde Registro como desde Inicio de sesión.
+    async function iniciarGoogle() {
+      await persistenciaLista;
+      const botones = [$ ("btn-google"), $("btn-google-registro")].filter(Boolean);
+      botones.forEach(b => { b.disabled = true; b.dataset.oldText = b.textContent; b.textContent = "Conectando con Google..."; });
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        const result = await signInWithPopup(auth, provider);
+        usuarioGooglePendiente = result.user;
+        const vendedorRef = doc(db, "vendedores", result.user.uid);
+        const viejoRef = doc(db, "tenants", result.user.uid);
+        let vendedorSnap = await getDoc(vendedorRef);
+        if (!vendedorSnap.exists()) {
+          const viejoSnap = await getDoc(viejoRef);
+          if (viejoSnap.exists()) vendedorSnap = viejoSnap;
+        }
+        if (!vendedorSnap.exists()) {
+          modoEdicionImagen = false;
+          cambiarTab("reg");
+          $("formRegistro").classList.add("hidden");
+          $("modal-otp").classList.add("hidden");
+          $("form-google-comercio").classList.remove("hidden");
+          $("google-nombre-comercio").value = result.user.displayName || "";
+          setMessage("mensaje-google-registro", "Google validado. Completa los datos para crear tu comercio, sin código por correo.", "info");
+          return;
+        }
+        const vendedor = vendedorSnap.data();
+        cambiarTab("log");
+        setMessage("mensaje-login", `¡Bienvenido, ${vendedor.nombre_tienda || vendedor.nombre_comercio || result.user.displayName || result.user.email}!`, "success");
+        await abrirPanelVendedor(result.user, vendedor);
+        // Si el comercio existe pero aún no tiene imagen, se ofrece completarla opcionalmente.
+        if (!vendedor.foto_perfil && !vendedor.foto_negocio) {
+          modoEdicionImagen = true;
+          $("form-google-comercio").classList.remove("hidden");
+          $("formRegistro").classList.add("hidden");
+          $("google-nombre-comercio").value = vendedor.nombre_tienda || vendedor.nombre_comercio || result.user.displayName || "";
+          $("google-rif").value = vendedor.rif_cedula || vendedor.rif_o_cedula || "";
+          $("google-telefono").value = vendedor.telefono || vendedor.whatsapp_telefono || "";
+          $("google-biografia").value = vendedor.biografia || vendedor.descripcion || "";
+          $("google-rif").required = false;
+          $("google-telefono").required = false;
+          $("google-password").required = false;
+          $("google-password").parentElement.classList.add("hidden");
+          $("google-rif").parentElement.classList.add("hidden");
+          $("google-telefono").parentElement.classList.add("hidden");
+          $("google-nombre-comercio").required = false;
+          $("btn-guardar-google-comercio").textContent = "Guardar imagen y continuar";
+          setMessage("mensaje-google-registro", "Tu comercio ya existe. Si quieres, selecciona una imagen y guarda; puedes omitirla cerrando esta sección.", "info");
+        }
+      } catch (err) {
+        console.error("Error de inicio con Google:", err);
+        const erroresGoogle = {
+          "auth/popup-closed-by-user": "Cerraste la ventana de Google antes de terminar.",
+          "auth/popup-blocked": "El navegador bloqueó la ventana emergente. Permite las ventanas emergentes e inténtalo de nuevo.",
+          "auth/unauthorized-domain": "Este dominio no está autorizado en Firebase Authentication.",
+          "auth/operation-not-allowed": "Activa el proveedor Google en Firebase Authentication.",
+          "auth/credential-already-in-use": "Esta credencial ya está asociada a otra cuenta."
+        };
+        setMessage("mensaje-login", erroresGoogle[err.code] || mensajeFirebase(err), "error");
+      } finally {
+        botones.forEach(b => { b.disabled = false; if (b.id === "btn-google") b.innerHTML = '<span class="text-lg font-bold text-blue-600">G</span> Continuar con Google'; else b.innerHTML = '<span class="text-lg font-bold text-blue-600">G</span> Registrarme con Google'; });
+      }
+    }
+    $("btn-google").addEventListener("click", iniciarGoogle);
+    $("btn-google-registro").addEventListener("click", iniciarGoogle);
+
+    $("btn-cancelar-google-comercio").addEventListener("click", async () => {
+      $("form-google-comercio").classList.add("hidden");
+      $("formRegistro").classList.remove("hidden");
+      $("google-rif").required = true;
+      $("google-telefono").required = true;
+      $("google-password").required = true;
+      $("google-password").parentElement.classList.remove("hidden");
+      $("google-rif").parentElement.classList.remove("hidden");
+      $("google-telefono").parentElement.classList.remove("hidden");
+      $("google-nombre-comercio").required = true;
+      if (auth.currentUser) await signOut(auth);
+      usuarioGooglePendiente = null;
+      modoEdicionImagen = false;
+    });
+
+    $("btn-guardar-google-comercio").addEventListener("click", async () => {
+      const user = usuarioGooglePendiente || auth.currentUser;
+      const btn = $("btn-guardar-google-comercio");
+      if (!user) {
+        setMessage("mensaje-google-registro", "Tu sesión de Google no está activa. Vuelve a pulsar Registrarme con Google.", "error");
+        return;
+      }
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.textContent = "Preparando registro...";
+
+      try {
+        setMessage("mensaje-google-registro", "Paso 1 de 4: comprobando los datos del comercio...", "info");
+        const [vendedorSnap, tenantSnap] = await conTiempoLimite(Promise.all([
+          getDoc(doc(db, "vendedores", user.uid)),
+          getDoc(doc(db, "tenants", user.uid))
+        ]), "consultar los datos del comercio");
+        const anterior = vendedorSnap.exists() ? vendedorSnap.data() : (tenantSnap.exists() ? tenantSnap.data() : {});
+        const esEdicionImagen = modoEdicionImagen || Boolean(anterior.nombre_tienda && (anterior.rif_cedula || anterior.rif_o_cedula));
+        const nombre = $("google-nombre-comercio").value.trim();
+        const rif = $("google-rif").value.trim().toUpperCase();
+        const telefono = validarTelefono($("google-telefono").value.trim());
+        const password = $("google-password").value;
+
+        if (!esEdicionImagen) {
+          if (!nombre) throw new Error("Escribe el nombre de tu negocio.");
+          if (!/^[JVEGP]-\d{8}-\d$/i.test(rif) && !/^[VE]-?\d{6,9}$/i.test(rif)) {
+            throw new Error("Introduce un RIF (J-12345678-9) o cédula válida (V-12345678).");
+          }
+          if (!telefono) throw new Error("Introduce un número de teléfono venezolano válido. Ejemplo: 04121234567.");
+          if (password.length < 8) throw new Error("La contraseña debe tener al menos 8 caracteres.");
+          if (!user.email) throw new Error("Google no devolvió un correo para esta cuenta. Prueba con otra cuenta de Google.");
+
+          setMessage("mensaje-google-registro", "Paso 2 de 4: vinculando el acceso con contraseña segura...", "info");
+          btn.textContent = "Vinculando acceso...";
+          const cred = EmailAuthProvider.credential(user.email, password);
+          try {
+            await conTiempoLimite(linkWithCredential(user, cred), "vincular la contraseña", 20000);
+          } catch (linkErr) {
+            // Si ya estaba vinculado, puede continuarse el guardado. Otros errores se muestran.
+            if (linkErr.code !== "auth/provider-already-linked") throw linkErr;
+          }
+        }
+
+        let fotoUrl = anterior.foto_perfil || anterior.foto_negocio || "";
+        let errorFoto = "";
+        const archivo = $("google-foto-negocio").files[0];
+        if (archivo) {
+          if (!archivo.type.startsWith("image/")) throw new Error("Selecciona un archivo de imagen válido.");
+          if (archivo.size > 5 * 1024 * 1024) throw new Error("La imagen debe pesar 5 MB o menos.");
+          setMessage("mensaje-google-registro", "Paso 3 de 4: subiendo la imagen a Cloudinary...", "info");
+          btn.textContent = "Subiendo imagen a Cloudinary...";
+          try {
+            fotoUrl = await subirImagenCloudinary(archivo, user.uid, "negocio");
+          } catch (uploadErr) {
+            console.error("No se pudo subir la foto del comercio a Cloudinary; continuaré sin foto.", uploadErr);
+            errorFoto = mensajeAyudaCloudinary(uploadErr);
+            fotoUrl = anterior.foto_perfil || anterior.foto_negocio || "";
+            setMessage("mensaje-google-registro", "No se pudo subir la imagen. Guardaré el comercio sin esa foto y continuaré. " + errorFoto, "info");
+          }
+        }
+
+        const biografia = $("google-biografia").value.trim();
+        const secretoNuevo = (!esEdicionImagen && password) ? await crearSecretKeyCifrada(password) : null;
+        let vendedor;
+        if (esEdicionImagen) {
+          vendedor = {
+            ...anterior,
+            foto_perfil: fotoUrl,
+            foto_negocio: fotoUrl,
+            biografia: biografia || anterior.biografia || "",
+            updated_at: serverTimestamp()
+          };
+        } else {
+          const slugBase = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || `tienda-${user.uid.slice(0, 6)}`;
+          setMessage("mensaje-google-registro", "Paso 3 de 4: comprobando la dirección de tu tienda...", "info");
+          const slugSnap = await conTiempoLimite(getDocs(query(collection(db, "vendedores"), where("slug", "==", slugBase))), "comprobar la URL de la tienda");
+          const slug = slugSnap.empty || slugSnap.docs.some(d => d.id === user.uid) ? slugBase : `${slugBase}-${user.uid.slice(0, 5)}`;
+          vendedor = {
+            ...(secretoNuevo ? secretoNuevo.datos : {}),
+            uid: user.uid,
+            nombre_tienda: nombre,
+            nombre_comercio: nombre,
+            rif_cedula: rif,
+            rif_o_cedula: rif,
+            telefono: telefono,
+            whatsapp_telefono: telefono,
+            foto_perfil: fotoUrl,
+            foto_negocio: fotoUrl,
+            email: user.email,
+            biografia,
+            descripcion: biografia,
+            slug,
+            url_tienda: `${location.origin}${location.pathname}?tienda=${encodeURIComponent(slug)}`,
+            tipo_comercio: "PEQUENO_NEGOCIO",
+            rol: "vendedor",
+            proveedor_registro: "google",
+            verificado: true,
+            created_at: serverTimestamp(),
+            updated_at: serverTimestamp()
+          };
+        }
+
+        setMessage("mensaje-google-registro", "Paso 4 de 4: guardando el comercio en Firebase Firestore...", "info");
+        btn.textContent = "Guardando en Firebase...";
+        // Guardar las dos rutas juntas evita que quede una colección escrita y la otra no.
+        const lote = writeBatch(db);
+        lote.set(doc(db, "vendedores", user.uid), vendedor, { merge: true });
+        lote.set(doc(db, "tenants", user.uid), vendedor, { merge: true });
+        await conTiempoLimite(lote.commit(), "guardar el comercio en Firestore", 25000);
+        if (secretoNuevo) await guardarSecretKeyPrivada(user, secretoNuevo);
+
+        if (esEdicionImagen) {
+          if (errorFoto) {
+            setMessage("mensaje-google-registro", "Los datos del perfil se guardaron, pero la imagen no se pudo subir. " + errorFoto, "error");
+          } else {
+            setMessage("mensaje-google-registro", archivo ? "Imagen subida y perfil actualizado correctamente." : "Perfil actualizado. No seleccionaste una imagen, así que se conservó la foto anterior.", "success");
+          }
+          if (!errorFoto) {
+            $("form-google-comercio").classList.add("hidden");
+            modoEdicionImagen = false;
+          }
+        } else {
+          const mensajeFinal = errorFoto
+            ? "¡Comercio creado correctamente! Los datos están guardados en Firebase, pero la foto no se subió. Puedes seguir usando la cuenta. " + errorFoto
+            : "¡Comercio creado correctamente! Los datos están guardados en Firebase y no se solicitó código OTP.";
+          setMessage("mensaje-google-registro", mensajeFinal, errorFoto ? "error" : "success");
+          $("google-password").value = "";
+          modoEdicionImagen = false;
+          // Limpiar el selector para que no se intente volver a subir el mismo archivo por accidente.
+          $("google-foto-negocio").value = "";
+          btn.textContent = "Comercio creado";
+          $("form-google-comercio").classList.add("hidden");
+          await abrirPanelVendedor(user, vendedor);
+        }
+      } catch (err) {
+        console.error("Error guardando comercio Google:", err, "código:", err?.code, "mensaje:", err?.message);
+        setMessage("mensaje-google-registro", mensajeErrorGoogle(err), "error");
+      } finally {
+        btn.disabled = false;
+        if (modoEdicionImagen) btn.textContent = "Guardar imagen y continuar";
+        else if (!$("mensaje-google-registro").textContent.startsWith("¡Comercio creado correctamente!")) btn.textContent = "Crear mi comercio";
+      }
+    });
+
+    async function mostrarProductos(uid) {
+      const lista = $("lista-productos");
+      lista.innerHTML = "";
+      try {
+        const resultados = await getDocs(query(collection(db, "productos"), where("vendedor_uid", "==", uid)));
+        resultados.forEach((snap) => {
+          const p = snap.data();
+          const card = document.createElement("article");
+          card.className = "rounded-xl border border-slate-200 p-3";
+          if (p.foto_url) { const img = document.createElement("img"); img.src = p.foto_url; img.alt = p.nombre || "Producto"; img.className = "mb-2 h-36 w-full rounded-lg object-contain bg-slate-50"; card.appendChild(img); }
+          const title = document.createElement("h3"); title.className = "font-semibold"; title.textContent = p.nombre || "Producto";
+          const meta = document.createElement("p"); meta.className = "text-xs text-slate-500"; meta.textContent = `${p.categoria || "Otros"} · ${p.subcategoria || "Sin subcategoría"}`;
+          const price = document.createElement("p"); price.className = "mt-2 font-extrabold text-emerald-700"; price.textContent = p.precio != null ? `${Number(p.precio).toLocaleString("es-VE",{minimumFractionDigits:2,maximumFractionDigits:2})} ${p.moneda || "USD"}` : "Precio pendiente"; card.append(title, meta, price); lista.appendChild(card);
+        });
+      } catch (err) { console.warn("No se pudo cargar la lista de productos", err); }
+    }
+
+    $("formProducto").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      const btn = $("btn-publicar-producto");
+      if (!user) { setMessage("mensaje-producto", "Inicia sesión como vendedor para publicar productos.", "error"); return; }
+      btn.disabled = true; btn.textContent = "Guardando producto...";
+      try {
+        const vendorSnap = await getDoc(doc(db, "vendedores", user.uid));
+        if (!vendorSnap.exists()) throw new Error("No encontramos tu comercio en Firestore.");
+        const vendedor = vendorSnap.data();
+        const archivo = $("producto-foto").files?.[0];
+        let fotoUrl = "";
+        let aviso = "";
+        if (archivo) {
+          try {
+            setMessage("mensaje-producto", "Subiendo imagen a Cloudinary...", "info");
+            fotoUrl = await subirImagenCloudinary(archivo, user.uid, "producto");
+          } catch (imgErr) {
+            console.error("Falló la subida de imagen del producto a Cloudinary", imgErr);
+            aviso = " El producto se guardará sin foto porque no se pudo subir a Cloudinary. " + mensajeAyudaCloudinary(imgErr);
+          }
+        }
+        const producto = {
+          vendedor_uid: user.uid,
+          nombre_tienda: vendedor.nombre_tienda || vendedor.nombre_comercio || "Tienda",
+          slug_tienda: vendedor.slug || "",
+          nombre: $("producto-nombre").value.trim(),
+          categoria: $("producto-categoria").value,
+          subcategoria: $("producto-subcategoria").value.trim(),
+          foto_url: fotoUrl,
+          precio: Number($("producto-precio").value),
+          moneda: $("producto-moneda").value,
+          tasa_usd_ves: tasaCambioUSD,
+          precio_usd: $("producto-moneda").value === "USD" ? Number($("producto-precio").value) : (tasaCambioUSD ? Number($("producto-precio").value) / tasaCambioUSD : null),
+          precio_ves: $("producto-moneda").value === "VES" ? Number($("producto-precio").value) : (tasaCambioUSD ? Number($("producto-precio").value) * tasaCambioUSD : null),
+          created_at: serverTimestamp(),
+          updated_at: serverTimestamp()
+        };
+        const refProducto = doc(collection(db, "productos"));
+        await conTiempoLimite(setDoc(refProducto, producto), "guardar el producto en Firestore", 25000);
+        setMessage("mensaje-producto", "Producto guardado correctamente." + aviso, aviso ? "info" : "success");
+        $("formProducto").reset(); $("preview-foto-producto").classList.add("hidden"); $("preview-foto-producto").removeAttribute("src");
+        await mostrarProductos(user.uid);
+      } catch (err) {
+        console.error("Error guardando producto", err);
+        setMessage("mensaje-producto", err.message || mensajeFirebase(err), "error");
+      } finally { btn.disabled = false; btn.textContent = "Guardar producto"; }
+    });
+
+    let tasaCambioUSD = null;
+    let ultimaTasaFuente = "";
+    const dinero = (n, moneda="USD") => new Intl.NumberFormat("es-VE",{style:"currency",currency:moneda,maximumFractionDigits:2}).format(Number(n)||0);
+    async function actualizarTasaCambio(){
+      const urls=["https://ve.dolarapi.com/v1/dolares/oficial","https://ve.dolarapi.com/v1/dolares/paralelo"];
+      for(const url of urls){try{const r=await fetch(url,{cache:"no-store"});if(!r.ok)continue;const d=await r.json();const v=Number(d.promedio||d.price||d.precio||d.venta);if(v>0){tasaCambioUSD=v;ultimaTasaFuente=(d.nombre||d.fuente||(url.includes("oficial")?"Tasa oficial":"Tasa consultada"));$("metric-tasa").textContent=`1 USD ≈ ${v.toLocaleString("es-VE")} VES · ${ultimaTasaFuente}`;actualizarEquivalente();return;}}catch(e){console.warn("No se pudo consultar tasa",e)}}$("metric-tasa").textContent="Tasa no disponible; no se actualizará automáticamente.";actualizarEquivalente();
+    }
+    function actualizarEquivalente(){const input=$("producto-precio"), moneda=$("producto-moneda"), out=$("producto-equivalente");if(!input||!moneda||!out)return;const v=Number(input.value);if(!v||v<=0){out.textContent="—";return;}if(!tasaCambioUSD){out.textContent="Tasa no disponible";return;}out.textContent=moneda.value==="USD"?dinero(v*tasaCambioUSD,"VES"):dinero(v/tasaCambioUSD,"USD");}
+    async function abrirPanelVendedor(user, comercio){
+      comercioActual = comercio || {};
+      $("tabs-acceso").classList.add("hidden");$("seccion-registro").classList.add("hidden");$("seccion-login").classList.add("hidden");$("panel-vendedor").classList.remove("hidden");
+      $("seccion-configuracion").classList.add("hidden");
+      document.querySelectorAll("[data-vista-panel]").forEach(el=>el.classList.remove("hidden"));
+      $("saludo-vendedor").textContent=`Hola, ${comercio.nombre_tienda||comercio.nombre_comercio||"vendedor"}`;
+      $("subtitulo-vendedor").textContent=comercio.descripcion||comercio.biografia||"Administra tu catálogo, pedidos y entregas desde aquí.";
+      const direccion=comercio.direccion||comercio.direccion_tienda||"No has configurado la dirección de tu tienda.";
+      $("resumen-tienda").innerHTML="";const name=document.createElement("p");name.className="font-bold text-white text-base";name.textContent=comercio.nombre_tienda||comercio.nombre_comercio||"Mi tienda";const addr=document.createElement("p");addr.className="mt-2";addr.textContent="Dirección: "+direccion;const delivery=document.createElement("p");delivery.className="mt-2";delivery.textContent="Delivery: "+(comercio.delivery_habilitado?"Habilitado":"Por configurar");$("resumen-tienda").append(name,addr,delivery);
+      $("config-telefono").value=comercio.telefono||comercio.whatsapp_telefono||"";
+      $("config-biografia").value=comercio.biografia||comercio.descripcion||"";
+      $("config-web").value=comercio.pagina_web||comercio.website||"";
+      $("config-foto-preview").src=comercio.foto_perfil||comercio.foto_negocio||"https://placehold.co/96x96/e0e7ff/4338ca?text=AE";
+      actualizarEstadoSuspension(Boolean(comercio.cuenta_suspendida));
+      await Promise.all([mostrarProductos(user.uid),cargarResumenPedidos(user.uid),registrarDispositivo(user)]);await actualizarTasaCambio();
+    }
+    async function cargarResumenPedidos(uid){
+      const list=$("lista-pedidos");list.innerHTML="";try{const snap=await getDocs(query(collection(db,"pedidos"),where("vendedor_uid","==",uid)));const clientes=new Set();let total=0;$("metric-pedidos").textContent=snap.size; snap.forEach(docu=>{const p=docu.data();if(p.cliente_uid)clientes.add(p.cliente_uid);if(p.cliente_email)clientes.add(p.cliente_email);total+=Number(p.total_usd||p.total||0);const card=document.createElement("article");card.className="rounded-xl border border-slate-200 p-4 grid grid-cols-1 md:grid-cols-3 gap-2";const title=document.createElement("p");title.className="font-bold text-slate-900";title.textContent="Pedido "+docu.id.slice(0,8);const status=document.createElement("p");status.className="text-sm text-slate-500";status.textContent="Estado: "+(p.estado||"Pendiente");const price=document.createElement("p");price.className="font-extrabold text-emerald-700";price.textContent=dinero(p.total_usd||p.total||0,"USD");const customer=document.createElement("p");customer.className="text-sm";customer.textContent="Cliente: "+(p.nombre_cliente||p.cliente_nombre||"No indicado");const address=document.createElement("p");address.className="text-sm md:col-span-2";address.textContent="Dirección de entrega (privada): "+(p.direccion_entrega||p.direccion_cliente||"No indicada");const items=document.createElement("p");items.className="text-sm text-slate-600 md:col-span-3";items.textContent="Productos: "+(Array.isArray(p.productos)?p.productos.map(x=>`${x.nombre||"Producto"} × ${x.cantidad||1}`).join(", "):"Detalle no disponible");card.append(title,status,price,customer,address,items);list.appendChild(card);});$("metric-clientes").textContent=clientes.size;$("metric-ventas").textContent=dinero(total,"USD");if(!snap.size)list.innerHTML='<p class="text-sm text-slate-500">Todavía no hay pedidos. Cuando la app de clientes cree documentos en la colección <code>pedidos</code> con <code>vendedor_uid</code>, aparecerán aquí.</p>';}catch(e){console.warn("No se pudieron cargar pedidos",e);list.innerHTML='<p class="text-sm text-amber-700">No se pudieron leer los pedidos. Revisa las reglas de Firestore y el esquema de la colección.</p>';$("metric-pedidos").textContent="—";$("metric-clientes").textContent="—";$("metric-ventas").textContent="—";}}
+    function actualizarEstadoSuspension(suspendida) {
+      comercioActual.cuenta_suspendida = suspendida;
+      const badge = $("estado-cuenta-badge");
+      badge.textContent = suspendida ? "Suspendida" : "Activa";
+      badge.className = suspendida ? "rounded-full bg-amber-100 px-3 py-1 text-xs font-extrabold text-amber-800" : "rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-700";
+      $("btn-suspender-cuenta").textContent = suspendida ? "Reactivar cuenta" : "Suspender cuenta";
+      $("btn-suspender-cuenta").className = suspendida ? "mt-4 rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white hover:bg-emerald-700" : "mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 font-bold text-amber-800 hover:bg-amber-100";
+    }
+    async function guardarPerfilEnFirestore(user, cambios) {
+      const actualizado = {...comercioActual, ...cambios, updated_at:serverTimestamp()};
+      await Promise.all([
+        setDoc(doc(db,"vendedores",user.uid), actualizado, {merge:true}),
+        setDoc(doc(db,"tenants",user.uid), actualizado, {merge:true})
+      ]);
+      comercioActual = {...comercioActual, ...cambios};
+    }
+    async function cargarDispositivos(uid) {
+      const contenedor = $("lista-dispositivos");
+      if (!contenedor) return;
+      try {
+        const snap = await getDocs(collection(db,"vendedores",uid,"dispositivos"));
+        contenedor.innerHTML = "";
+        if (snap.empty) { contenedor.innerHTML = '<p class="settings-muted">Todavía no hay dispositivos registrados.</p>'; return; }
+        const actual = idDispositivoLocal();
+        const rows = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=> (b.ultimo_acceso?.seconds||0)-(a.ultimo_acceso?.seconds||0));
+        rows.forEach(d=>{
+          const row=document.createElement("div");row.className="device-row";
+          const left=document.createElement("div");left.className="min-w-0";
+          const name=document.createElement("p");name.className="font-bold text-sm text-slate-800";name.textContent=d.nombre||"Dispositivo"+(d.id===actual?" (este dispositivo)":"");
+          if(d.id===actual) name.textContent += " · Este dispositivo";
+          const detail=document.createElement("p");detail.className="settings-muted";detail.textContent=d.ultimo_acceso?.toDate?`Último acceso: ${d.ultimo_acceso.toDate().toLocaleString("es-VE")}`:"Acceso registrado";
+          left.append(name,detail);const icon=document.createElement("span");icon.className="text-xl";icon.textContent=d.id===actual?"🟢":"💻";row.append(left,icon);contenedor.appendChild(row);
+        });
+      } catch (e) {
+        contenedor.innerHTML='<p class="settings-muted">No se pudieron consultar los dispositivos. Revisa las reglas de Firestore.</p>';
+        console.warn("Error listando dispositivos",e);
+      }
+    }
+
+    document.querySelectorAll("[data-config-tab]").forEach(btn=>btn.addEventListener("click",()=>{
+      document.querySelectorAll("[data-config-tab]").forEach(b=>b.classList.toggle("active",b===btn));
+      document.querySelectorAll("[data-config-panel]").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.configPanel!==btn.dataset.configTab));
+    }));
+    $("config-foto").addEventListener("change",()=>{const f=$("config-foto").files?.[0];if(!f){$("config-foto-preview").src=comercioActual.foto_perfil||"https://placehold.co/96x96/e0e7ff/4338ca?text=AE";return;}if(!f.type.startsWith("image/")||f.size>5*1024*1024){setMessage("mensaje-perfil-config","Selecciona una imagen válida de hasta 5 MB.","error");$("config-foto").value="";return;}$("config-foto-preview").src=URL.createObjectURL(f);});
+    $("form-perfil-config").addEventListener("submit",async e=>{
+      e.preventDefault();const user=auth.currentUser;if(!user){setMessage("mensaje-perfil-config","Inicia sesión primero.","error");return;}
+      const btn=e.submitter; if(btn){btn.disabled=true;btn.textContent="Guardando…";}
+      try{
+        let foto=comercioActual.foto_perfil||comercioActual.foto_negocio||"";const archivo=$("config-foto").files?.[0];if(archivo)foto=await subirImagenCloudinary(archivo,user.uid,"perfil");
+        const telefono=$("config-telefono").value.trim();const web=$("config-web").value.trim();if(web&&!/^https?:\/\//i.test(web))throw new Error("La página web debe comenzar con https:// o http://.");
+        const cambios={telefono,whatsapp_telefono:telefono,biografia:$("config-biografia").value.trim(),descripcion:$("config-biografia").value.trim(),pagina_web:web,website:web,foto_perfil:foto};
+        await guardarPerfilEnFirestore(user,cambios);if(foto)await updateProfile(user,{photoURL:foto});$("config-foto-preview").src=foto||"https://placehold.co/96x96/e0e7ff/4338ca?text=AE";setMessage("mensaje-perfil-config","Perfil actualizado correctamente.","success");
+      }catch(err){setMessage("mensaje-perfil-config",err.message||mensajeFirebase(err),"error");}finally{if(btn){btn.disabled=false;btn.textContent="Guardar perfil";}}
+    });
+    $("form-email-config").addEventListener("submit",async e=>{
+      e.preventDefault();const user=auth.currentUser;if(!user)return;const btn=e.submitter;if(btn){btn.disabled=true;btn.textContent="Actualizando…";}
+      try{await persistenciaLista;await reautenticarConPassword(user,$("config-email-password").value);const nuevo=$("config-email-nuevo").value.trim().toLowerCase();await updateEmail(user,nuevo);await guardarPerfilEnFirestore(user,{email:nuevo});await sendEmailVerification(user);$("config-email-password").value="";setMessage("mensaje-email-config","Correo actualizado. Revisa la bandeja del nuevo correo para verificarlo.","success");}
+      catch(err){setMessage("mensaje-email-config",mensajeFirebase(err)||err.message,"error");}finally{if(btn){btn.disabled=false;btn.textContent="Actualizar correo";}}
+    });
+    $("form-password-config").addEventListener("submit",async e=>{
+      e.preventDefault();const user=auth.currentUser;if(!user)return;const actual=$("config-password-actual").value,nueva=$("config-password-nueva").value,confirmar=$("config-password-confirmar").value;const btn=e.submitter;if(btn){btn.disabled=true;btn.textContent="Actualizando…";}
+      try{if(nueva.length<8)throw new Error("La nueva contraseña debe tener al menos 8 caracteres.");if(nueva!==confirmar)throw new Error("Las contraseñas nuevas no coinciden.");await reautenticarConPassword(user,actual);await updatePassword(user,nueva);const secretoRotado=await crearSecretKeyCifrada(nueva);await guardarPerfilEnFirestore(user,secretoRotado.datos);await guardarSecretKeyPrivada(user,secretoRotado);$("secret-reveal").classList.add("hidden");$("config-password-actual").value="";$("config-password-nueva").value="";$("config-password-confirmar").value="";setMessage("mensaje-password-config","Contraseña actualizada y Secret Key renovada. La clave anterior ya no debe utilizarse; vuelve a mostrar la nueva clave en Compartir inicio.","success");}
+      catch(err){setMessage("mensaje-password-config",err.message||mensajeFirebase(err),"error");}finally{if(btn){btn.disabled=false;btn.textContent="Cambiar contraseña";}}
+    });
+    $("form-mostrar-secret").addEventListener("submit",async e=>{
+      e.preventDefault();const user=auth.currentUser;if(!user)return;const password=$("secret-password").value;const btn=e.submitter;if(btn){btn.disabled=true;btn.textContent="Verificando…";}$("secret-reveal").classList.add("hidden");$("qrcode-secret").innerHTML="";
+      try{
+        await reautenticarConPassword(user,password);
+        const privateSnap=await getDoc(doc(db,"vendedores",user.uid,"seguridad","secretKey"));
+        const datosPrivados=privateSnap.exists()?privateSnap.data():comercioActual;
+        let secret=null;
+        try { secret=await descifrarSecretKey(datosPrivados,password); }
+        catch(decryptErr) {
+          // Recuperación si la contraseña se cambió pero falló la escritura de la clave cifrada.
+          if(decryptErr.name!=="OperationError") throw decryptErr;
+        }
+        if(!secret){const generado=await crearSecretKeyCifrada(password);await guardarPerfilEnFirestore(user,generado.datos);await guardarSecretKeyPrivada(user,generado);secret=generado.secret;}
+        else if(!comercioActual.secret_key_hash){await guardarPerfilEnFirestore(user,{secret_key_hash:await hashSecretKey(secret)});}
+        $("secret-key-visible").textContent=secret;$("secret-reveal").classList.remove("hidden");
+        if(window.QRCode){new QRCode($("qrcode-secret"),{text:`alexpressve://pair?key=${encodeURIComponent(secret)}`,width:190,height:190,correctLevel:QRCode.CorrectLevel.H});}
+        else $("qrcode-secret").textContent="No se pudo cargar el generador QR. Comprueba tu conexión y vuelve a abrir esta sección.";
+        $("secret-password").value="";setMessage("mensaje-secret","Identidad verificada. Protege esta clave y el código QR como si fueran una contraseña.","success");
+      }catch(err){setMessage("mensaje-secret",err.name==="OperationError"?"La contraseña no coincide con la que cifra la Secret Key. Si cambiaste la contraseña recientemente, se necesita regenerar la clave.":(err.message||mensajeFirebase(err)),"error");}
+      finally{if(btn){btn.disabled=false;btn.textContent="Verificar y mostrar Secret Key";}}
+    });
+    $("btn-copiar-secret").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("secret-key-visible").textContent);setMessage("mensaje-secret","Secret Key copiada al portapapeles. No la compartas.","success");}catch(e){setMessage("mensaje-secret","No se pudo copiar automáticamente; selecciona la clave y cópiala manualmente.","info");}});
+    $("btn-suspender-cuenta").addEventListener("click",async()=>{
+      const user=auth.currentUser;if(!user)return;const suspendida=!Boolean(comercioActual.cuenta_suspendida);const confirmacion=confirm(suspendida?"¿Suspender tu comercio? La app de clientes debe ocultar las tiendas con esta marca.":"¿Reactivar tu comercio?");if(!confirmacion)return;
+      try{await guardarPerfilEnFirestore(user,{cuenta_suspendida:suspendida,estado_cuenta:suspendida?"suspendida":"activa"});actualizarEstadoSuspension(suspendida);setMessage("mensaje-suspension",suspendida?"La cuenta quedó marcada como suspendida. Asegúrate de que la app de clientes filtre este estado.":"Cuenta reactivada.",suspendida?"info":"success");}catch(err){setMessage("mensaje-suspension",err.message||mensajeFirebase(err),"error");}
+    });
+    $("form-eliminar-cuenta").addEventListener("submit",async e=>{
+      e.preventDefault();const user=auth.currentUser;if(!user)return;if($("confirmar-eliminacion").value.trim()!=="ELIMINAR"){setMessage("mensaje-eliminar-cuenta","Escribe exactamente ELIMINAR para continuar.","error");return;}
+      try{await reautenticarConPassword(user,$("eliminar-password").value);const pedirEliminacion=httpsCallable(functions,"requestAccountDeletion");await pedirEliminacion({confirmacion:"ELIMINAR"});setMessage("mensaje-eliminar-cuenta","Solicitud registrada. La eliminación definitiva necesita la función administrativa que borra o anonimiza todos los datos relacionados; esta pantalla no elimina datos parcialmente.","success");$("confirmar-eliminacion").value="";$("eliminar-password").value="";}
+      catch(err){setMessage("mensaje-eliminar-cuenta",err.message||mensajeFirebase(err),"error");}
+    });
+
+    function actualizarModoAccesoDispositivo(){
+      const movil=window.matchMedia("(max-width: 640px)").matches;
+      $("acceso-movil").classList.toggle("hidden",!movil);
+      $("acceso-normal").classList.toggle("hidden",movil);
+      $("tabs-acceso").classList.toggle("hidden",movil || !$ ("panel-vendedor").classList.contains("hidden"));
+    }
+    actualizarModoAccesoDispositivo();window.addEventListener("resize",actualizarModoAccesoDispositivo);
+    async function accederConSecretKey(valor){
+      const key=String(valor||"").trim().toUpperCase();if(!key){setMessage("mensaje-login-movil","Escribe tu Secret Key o escanea el QR.","error");return;}
+      const botones=[$("form-login-secret")?.querySelector("button[type=submit]"),$("btn-escanear-qr")].filter(Boolean);botones.forEach(b=>b.disabled=true);
+      setMessage("mensaje-login-movil","Validando clave con el servicio seguro de Firebase…","info");
+      try{await persistenciaLista;const redeem=httpsCallable(functions,"redeemSecretKey");const result=await redeem({secretKey:key});if(!result.data?.customToken)throw new Error("Firebase no devolvió una credencial de sesión válida.");await signInWithCustomToken(auth,result.data.customToken);$("login-secret-key").value="";setMessage("mensaje-login-movil","Sesión iniciada correctamente.","success");}
+      catch(err){console.error("No se pudo iniciar con Secret Key",err);const msg=err.code==="functions/not-found"?"La función redeemSecretKey todavía no está desplegada en Firebase.":(err.message||"No se pudo validar la clave.");setMessage("mensaje-login-movil",msg,"error");}
+      finally{botones.forEach(b=>b.disabled=false);}
+    }
+    $("form-login-secret").addEventListener("submit",e=>{e.preventDefault();accederConSecretKey($("login-secret-key").value);});
+    let lectorQrActivo=null;
+    $("btn-escanear-qr").addEventListener("click",async()=>{
+      const zona=$("lector-qr-login");
+      if(!window.Html5Qrcode){setMessage("mensaje-login-movil","No se cargó el lector QR. Comprueba tu conexión y vuelve a intentarlo.","error");return;}
+      if(lectorQrActivo){try{await lectorQrActivo.stop();}catch{}lectorQrActivo=null;zona.classList.add("hidden");return;}
+      try{zona.classList.remove("hidden");lectorQrActivo=new Html5Qrcode("lector-qr-login");await lectorQrActivo.start({facingMode:"environment"},{fps:10,qrbox:{width:240,height:240}},async decoded=>{
+        let key=decoded.trim();try{const url=new URL(decoded);if(url.protocol==="alexpressve:")key=url.searchParams.get("key")||"";else if(url.searchParams.has("key"))key=url.searchParams.get("key")||"";}catch{}
+        if(lectorQrActivo){try{await lectorQrActivo.stop();}catch{}lectorQrActivo=null;}zona.classList.add("hidden");$("login-secret-key").value=key;await accederConSecretKey(key);
+      },()=>{});}catch(err){zona.classList.add("hidden");setMessage("mensaje-login-movil","No se pudo abrir la cámara. Permite el acceso a la cámara y usa una página HTTPS.","error");console.warn(err);lectorQrActivo=null;}
+    });
+
+    $("btn-olvido-password").addEventListener("click",async()=>{const email=$("login-email").value.trim();if(!email){setMessage("mensaje-login","Escribe tu correo arriba y vuelve a pulsar «¿Olvidaste tu contraseña?». ","error");return;}try{await sendPasswordResetEmail(auth,email);setMessage("mensaje-login","Si el correo está registrado, recibirás instrucciones para restablecer la contraseña.","success");}catch(e){setMessage("mensaje-login",mensajeFirebase(e),"error");}});
+    const btnKebab = $("btn-kebab"), menuKebab = $("menu-kebab");
+    btnKebab?.addEventListener("click",()=>{menuKebab.classList.toggle("hidden");btnKebab.setAttribute("aria-expanded",String(!menuKebab.classList.contains("hidden")));});
+    menuKebab?.querySelectorAll("[data-vista]").forEach(btn=>btn.addEventListener("click",()=>{
+      const vista=btn.dataset.vista; menuKebab.classList.add("hidden");btnKebab.setAttribute("aria-expanded","false");
+      menuKebab.querySelectorAll("[data-vista]").forEach(b=>b.classList.toggle("active",b===btn));
+      document.querySelectorAll("[data-vista-panel]").forEach(el=>el.classList.toggle("hidden",vista==="configuracion"||!el.dataset.vistaPanel.split(" ").includes(vista)));
+      $("seccion-configuracion").classList.toggle("hidden",vista!=="configuracion");
+      if(vista==="configuracion"){
+        document.querySelectorAll("[data-config-tab]").forEach(b=>b.classList.toggle("active",b.dataset.configTab==="general"));
+        document.querySelectorAll("[data-config-panel]").forEach(p=>p.classList.toggle("hidden",p.dataset.configPanel!=="general"));
+        const u=auth.currentUser;if(u)cargarDispositivos(u.uid);
+      }
+    }));
+    document.addEventListener("click",e=>{if(menuKebab&&btnKebab&&!menuKebab.contains(e.target)&&!btnKebab.contains(e.target)){menuKebab.classList.add("hidden");btnKebab.setAttribute("aria-expanded","false");}});
+    $("btn-ir-registro").addEventListener("click",()=>cambiarTab("reg"));
+    $("btn-cerrar-sesion").addEventListener("click",async()=>{await signOut(auth);$("panel-vendedor").classList.add("hidden");$("seccion-configuracion").classList.add("hidden");$("tabs-acceso").classList.remove("hidden");cambiarTab("log");});
+    $("btn-refrescar-panel").addEventListener("click",async()=>{const u=auth.currentUser;if(!u)return;let s=await getDoc(doc(db,"vendedores",u.uid));if(!s.exists())s=await getDoc(doc(db,"tenants",u.uid));await abrirPanelVendedor(u,s.exists()?s.data():{});});
+    $("producto-precio").addEventListener("input",actualizarEquivalente);$("producto-moneda").addEventListener("change",actualizarEquivalente);
+
+    $("formLogin").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = $("btn-login");
+      btn.disabled = true;
+      btn.textContent = "Validando...";
+      $("mensaje-login").textContent = "";
+      const email = $("login-email").value.trim().toLowerCase();
+      const password = $("login-password").value;
+
+      try {
+        await persistenciaLista;
+        const credential = await signInWithEmailAndPassword(auth, email, password);
+        let tenantSnap = await getDoc(doc(db, "vendedores", credential.user.uid));
+        if (!tenantSnap.exists()) tenantSnap = await getDoc(doc(db, "tenants", credential.user.uid));
+
+        if (!tenantSnap.exists()) {
+          await signOut(auth);
+          throw new Error("La cuenta existe, pero no encontramos los datos del comercio. Contacta con soporte.");
+        }
+        const comercio = tenantSnap.data();
+        setMessage("mensaje-login", `¡Bienvenido, ${comercio.nombre_tienda || comercio.nombre_comercio}! Tipo de comercio: ${comercio.tipo_comercio || "No especificado"}.`, "success");
+        await abrirPanelVendedor(credential.user, comercio);
+        // Aquí puedes redirigir al panel, por ejemplo:
+        // window.location.href = "panel.html";
+      } catch (err) {
+        setMessage("mensaje-login", err.code ? mensajeFirebase(err) : err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Acceder a mi Panel";
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+      console.info("Sesión autenticada:", user.uid);
+      // Al recargar la página se restaura el panel si ya existe el comercio.
+      try {
+        let snap=await getDoc(doc(db,"vendedores",user.uid));
+        if(!snap.exists())snap=await getDoc(doc(db,"tenants",user.uid));
+        if(snap.exists() && snap.data().nombre_tienda) await abrirPanelVendedor(user,snap.data());
+      } catch(err) { console.warn("No se pudo restaurar el panel de vendedor",err); }
+    });
+  </script>
+</body>
+</html>
